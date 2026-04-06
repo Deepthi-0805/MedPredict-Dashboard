@@ -363,14 +363,30 @@ function renderResults(results) {
 }
 
 // --- Data Renderers ---
+let currentHistoryFilter = null;
+window.clearHistoryFilter = function() {
+    currentHistoryFilter = null;
+    renderHistory();
+};
+
 function renderHistory() {
     historyTbody.innerHTML = '';
-    if (historyDB.length === 0) {
-        // Note: Colspan updated to 5
-        historyTbody.innerHTML = '<tr><td colspan="5" style="padding:1rem; text-align:center; color:var(--text-muted);">No scan history available.</td></tr>';
+    
+    let db = historyDB;
+    if (currentHistoryFilter) {
+        db = historyDB.filter(r => r.name.toLowerCase() === currentHistoryFilter.toLowerCase());
+        historyTbody.innerHTML = `<tr><td colspan="5" style="padding: 0.75rem 1rem; background: rgba(100, 255, 218, 0.05); color: var(--accent-cyan); border-bottom: 1px solid var(--panel-border); text-align: center;">
+            Showing records for <strong style="color:#fff;">${currentHistoryFilter}</strong> 
+            <button class="clear-btn" style="margin-left: 1rem; text-decoration: underline;" onclick="clearHistoryFilter()"><i class="fa-solid fa-xmark"></i> Clear Filter</button>
+        </td></tr>`;
+    }
+
+    if (db.length === 0) {
+        historyTbody.innerHTML += `<tr><td colspan="5" style="padding:1rem; text-align:center; color:var(--text-muted);">No scan history available.</td></tr>`;
         return;
     }
-    historyDB.forEach(record => {
+    
+    db.forEach(record => {
         let statusBadge = '';
         if (record.status === 'Review Pending') {
             statusBadge = `<button class="status-badge" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.4)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.2)'" onclick="approveSingleRecord('${record.id}')">Approve</button>`;
@@ -420,7 +436,7 @@ function renderPatients(searchQuery = '') {
                 </div>
                 <div style="font-size:0.85rem; margin-bottom: 0.5rem;"><strong style="color:var(--text-muted);">Last Diagnosis:</strong> ${patient.lastDiagnosis || 'None'}</div>
                 <div style="display:flex; gap:0.5rem; margin-top: 0.5rem;">
-                    <button class="glow-btn" style="flex:2; padding: 0.5rem; font-size: 0.8rem;" onclick="approveRecord('${patient.name.replace(/'/g, "\\'")}')">View / Approve</button>
+                    <button class="glow-btn" style="flex:2; padding: 0.5rem; font-size: 0.8rem;" onclick="viewPatientHistory('${patient.name.replace(/'/g, "\\'")}')">View History</button>
                     <button class="clear-btn" style="flex:1; padding: 0.5rem; font-size: 0.8rem; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);" onclick="deletePatient('${patient.name.replace(/'/g, "\\'")}')"><i class="fa-solid fa-trash"></i> Delete</button>
                 </div>
             </div>
@@ -464,24 +480,10 @@ window.approveSingleRecord = function (recordId) {
     }
 };
 
-window.approveRecord = function (patientName) {
-    let hasUpdates = false;
-
-    // Find all pending history records for this patient and approve them
-    historyDB.forEach(record => {
-        if (record.name.toLowerCase() === patientName.toLowerCase() && record.status === 'Review Pending') {
-            record.status = 'Approved';
-            hasUpdates = true;
-        }
-    });
-
-    if (hasUpdates) {
-        localStorage.setItem('medpredict_history', JSON.stringify(historyDB));
-        renderHistory();
-    }
-
-    // Auto-navigate to history tab to show the approved records
+window.viewPatientHistory = function (patientName) {
+    currentHistoryFilter = patientName;
     document.querySelector('[data-target="view-history"]').click();
+    renderHistory();
 };
 
 // --- Add Patient Modal Logic ---
