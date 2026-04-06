@@ -63,6 +63,8 @@ function init() {
         if (session && session.role === 'user') {
             document.querySelector('[data-target="view-history"]').style.display = 'none';
             document.querySelector('[data-target="view-patients"]').style.display = 'none';
+            const searchBar = document.querySelector('.search-bar');
+            if (searchBar) searchBar.style.display = 'none';
             document.querySelector('.user-name').textContent = 'Clinical User';
             document.querySelector('.user-role').textContent = 'Standard Access';
             document.querySelector('.user-profile .avatar').textContent = 'CU';
