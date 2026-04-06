@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedPredict | Secure Login</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--bg-base);
+            padding: 2rem;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .login-header {
+            margin-bottom: 2.5rem;
+        }
+        .login-logo {
+            font-size: 3rem;
+            color: var(--accent-cyan);
+            filter: drop-shadow(0 0 10px var(--accent-cyan-glow));
+            margin-bottom: 1rem;
+        }
+        .login-header h1 {
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .input-field {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            color: #fff;
+            outline: none;
+            transition: var(--transition);
+        }
+        .input-field:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px rgba(100,255,218,0.2);
+        }
+        .login-btn {
+            width: 100%;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            min-height: 20px;
+            display: none;
+        }
+        .credentials-hint {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+        }
+        .login-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--panel-border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .tab-btn.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="glass-panel login-card">
+            <div class="login-header">
+                <i class="fa-solid fa-heart-pulse login-logo"></i>
+                <h1>MedPredict</h1>
+                <p>Secure Medical AI Gateway</p>
+            </div>
+
+            <div class="login-tabs">
+                <button class="tab-btn" id="tab-admin">Admin Login</button>
+                <button class="tab-btn active" id="tab-user">User Login</button>
+            </div>
+            
+            <form id="admin-form" class="form-section">
+                <div class="input-group">
+                    <label>Admin Username</label>
+                    <input type="text" id="admin-username" class="input-field" placeholder="Enter admin username" autocomplete="off" value="admin">
+                </div>
+                <div class="input-group">
+                    <label>Admin Security Key</label>
+                    <input type="password" id="admin-password" class="input-field" placeholder="Enter password" value="password">
+                </div>
+                
+                <button type="submit" class="glow-btn login-btn">
+                    <i class="fa-solid fa-user-shield"></i> Admin Login
+                </button>
+                <div id="admin-error-msg" class="error-msg">Invalid credentials. Access denied.</div>
+            </form>
+
+            <form id="user-form" class="form-section active">
+                <div class="input-group">
+                    <label>Clinical Username</label>
+                    <input type="text" id="user-username" class="input-field" placeholder="Enter registered username" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Security Key</label>
+                    <input type="password" id="user-password" class="input-field" placeholder="Enter password">
+                </div>
+                
+                <button type="submit" class="glow-btn login-btn">
+                    <i class="fa-solid fa-user"></i> Secure Login
+                </button>
+                
+                <div id="user-error-msg" class="error-msg">Invalid credentials. Access denied.</div>
+                
+                <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                    Unregistered? <a href="#" id="show-register-btn" style="color: var(--accent-cyan); text-decoration: none;">Create Clinical Account</a>
+                </div>
+            </form>
+
+            <form id="register-form" class="form-section">
+                <div class="input-group">
+                    <label>New Clinical Username</label>
+                    <input type="text" id="reg-username" class="input-field" placeholder="Choose a username" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>New Security Key</label>
+                    <input type="password" id="reg-password" class="input-field" placeholder="Create a strong password">
+                </div>
+                
+                <button type="submit" class="glow-btn login-btn" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981;">
+                    <i class="fa-solid fa-user-plus"></i> Register
+                </button>
+                
+                <div id="reg-error-msg" class="error-msg"></div>
+                <div id="reg-success-msg" style="color: #10b981; font-size: 0.85rem; margin-top: 1rem; display: none;">Registration successful! You may now login.</div>
+                
+                <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                    Already registered? <a href="#" id="show-login-btn" style="color: var(--accent-cyan); text-decoration: none;">Return to Login</a>
+                </div>
+            </form>
+
+            <div class="credentials-hint" style="text-align: left;">
+                <i class="fa-solid fa-circle-info"></i> <strong>Gateway Information:</strong><br>
+                Admin (Full Access): <strong>admin</strong> | <strong>password</strong><br>
+                Users: Please create your own secure clinical credentials.
+            </div>
+        </div>
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedPredict | AI Disease Prediction Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <script>
+        try {
+            const auth = JSON.parse(localStorage.getItem('medpredict_auth'));
+            if (!auth || !auth.role) window.location.href = 'login.html';
+        } catch(e) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <i class="fa-solid fa-heart-pulse logo-icon"></i>
+                <h2>MedPredict</h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-target="view-dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="#" class="nav-item" data-target="view-history"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                <a href="#" class="nav-item" data-target="view-patients"><i class="fa-solid fa-users"></i> Patients</a>
+                <a href="#" class="nav-item" data-target="view-settings"><i class="fa-solid fa-gear"></i> Settings</a>
+                <a href="#" class="nav-item" id="nav-logout" style="margin-top: 1rem; color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar">MD</div>
+                <div class="user-info">
+                    <span class="user-name">Dr. Admin</span>
+                    <span class="user-role">System Admin</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="search-bar glass-panel">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="top-search-bar" placeholder="Search patients...">
+                </div>
+                <div class="header-actions" style="position:relative;">
+                    <button class="icon-btn glass-panel" id="notify-btn"><i class="fa-regular fa-bell"></i><span class="notify-dot" style="display:none;"></span></button>
+                    <!-- Notification Dropdown -->
+                    <div id="notify-dropdown" class="glass-panel" style="display:none; position:absolute; top:110%; right:0; width:320px; padding:1rem; z-index:100; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--panel-border); padding-bottom:0.5rem; margin-bottom:0.5rem;">
+                            <h4 style="margin:0; color:var(--text-muted);">System Notifications</h4>
+                            <button id="clear-notifs-btn" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem; text-decoration:underline;">Clear All</button>
+                        </div>
+                        <div id="notify-list" style="max-height:250px; overflow-y:auto; font-size:0.85rem;"></div>
+                    </div>
+                    <button class="primary-btn" id="new-scan-btn"><i class="fa-solid fa-plus"></i> New Scan</button>
+                </div>
+            </header>
+
+            <div id="view-dashboard" class="spa-view active" style="display:block;">
+                <div class="dashboard-grid">
+                <!-- Welcome & Stats -->
+                <section class="welcome-section">
+                    <h1>Symptom Analyzer AI</h1>
+                    <p>Enter patient symptoms below to generate real-time differential diagnosis using our predictive models.</p>
+                </section>
+
+                <!-- Core App Area: Input and Results -->
+                <div class="analyzer-layout">
+                    
+                    <!-- Symptom Input Panel -->
+                    <div class="glass-panel main-panel input-panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-stethoscope"></i> Patient Scan Data</h3>
+                            <button class="clear-btn" id="clear-btn">Clear All</button>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                            <input type="text" id="patient-name" class="client-name" placeholder="Patient Name (e.g. John Doe)" style="flex: 2; background: rgba(0,0,0,0.2); border: 1px solid var(--panel-border); border-radius: var(--radius-md); padding: 0.75rem 1rem; color: #fff; outline:none;" autocomplete="off">
+                            <input type="number" id="patient-age" class="client-age" placeholder="Age" style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--panel-border); border-radius: var(--radius-md); padding: 0.75rem 1rem; color: #fff; outline:none;" min="0" autocomplete="off">
+                        </div>
+                        
+                        <div class="symptom-input-container">
+                            <div class="tags-container" id="tags-container">
+                                <!-- Tags will be injected here by JS -->
+                                <input type="text" id="symptom-input" placeholder="Type a symptom and press enter... (e.g. fever, headache)" autocomplete="off">
+                            </div>
+                            <div class="suggestions-dropdown glass-panel" id="suggestions">
+                                <!-- Suggestions injected by JS -->
+                            </div>
+                        </div>
+
+                        <div class="action-footer">
+                            <p class="helper-text"><i class="fa-solid fa-circle-info"></i> More symptoms improve prediction accuracy.</p>
+                            <button class="glow-btn" id="predict-btn">
+                                <i class="fa-solid fa-microchip"></i> Predict Disease
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Prediction Results Panel -->
+                    <div class="glass-panel main-panel results-panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-flask-vial"></i> AI Diagnosis</h3>
+                            <span class="status-badge" id="ai-status">Waiting for input</span>
+                        </div>
+                        
+                        <div class="results-content" id="results-content">
+                            <!-- Loader -->
+                            <div class="loader-container" id="loader" style="display: none;">
+                                <div class="spinner"></div>
+                                <p>Analyzing symptom matrix...</p>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div class="empty-state" id="empty-state">
+                                <i class="fa-solid fa-clipboard-list ghost-icon"></i>
+                                <p>No symptoms entered yet. Predictions will appear here.</p>
+                            </div>
+
+                            <!-- Results List -->
+                            <div class="predictions-list" id="predictions-list" style="display: none;">
+                                <!-- Results injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Cards below -->
+                <div class="info-cards">
+                    <div class="glass-panel stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-viruses"></i></div>
+                        <div class="stat-details">
+                            <span class="stat-title">Top Searched</span>
+                            <span class="stat-value">Covid-19</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-check-double"></i></div>
+                        <div class="stat-details">
+                            <span class="stat-title">Model Accuracy</span>
+                            <span class="stat-value neon-text">98.4%</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-database"></i></div>
+                        <div class="stat-details">
+                            <span class="stat-title">Database Version</span>
+                            <span class="stat-value">v4.2.1 (Live)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            </div> <!-- End Dashboard View -->
+
+            <!-- History View -->
+            <div id="view-history" class="spa-view" style="display:none;">
+                <div class="glass-panel" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <h2 style="margin-bottom: 0.5rem; color: var(--accent-cyan);"><i class="fa-solid fa-clock-rotate-left"></i> Recent Scans History</h2>
+                            <p style="color: var(--text-muted);">A log of all differential diagnoses generated by your account.</p>
+                        </div>
+                        <button class="clear-btn" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" id="clear-history-btn"><i class="fa-solid fa-trash"></i> Clear History</button>
+                    </div>
+                    <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid var(--panel-border); color: var(--text-muted);">
+                            <th style="padding: 1rem;">Date</th>
+                            <th style="padding: 1rem;">Patient ID</th>
+                            <th style="padding: 1rem;">Primary Prediction</th>
+                            <th style="padding: 1rem;">Confidence</th>
+                            <th style="padding: 1rem;">Status</th>
+                        </tr>
+                        <tbody id="history-tbody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Patients View -->
+            <div id="view-patients" class="spa-view" style="display:none;">
+                <div class="glass-panel" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 style="color: var(--accent-cyan);"><i class="fa-solid fa-users"></i> Patient Directory</h2>
+                        <button class="primary-btn" id="show-add-patient-btn"><i class="fa-solid fa-user-plus"></i> Add New Patient</button>
+                    </div>
+
+                    <!-- Add Patient Form (Hidden by default) -->
+                    <div id="add-patient-form-container" style="display: none; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">New Patient Record</h3>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <input type="text" id="new-patient-name" placeholder="Full Name" style="flex: 2; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: var(--radius-md); padding: 0.75rem 1rem; color: #fff; outline:none;" autocomplete="off">
+                            <input type="number" id="new-patient-age" placeholder="Age" style="flex: 1; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: var(--radius-md); padding: 0.75rem 1rem; color: #fff; outline:none;" min="0">
+                            <select id="new-patient-gender" style="flex: 1; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: var(--radius-md); padding: 0.75rem 1rem; color: #fff; outline:none;">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                            <button class="clear-btn" id="cancel-add-patient-btn">Cancel</button>
+                            <button class="glow-btn" id="save-patient-btn">Save Patient</button>
+                        </div>
+                    </div>
+
+                    <div id="patients-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                        <!-- JS Injected Cards -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="spa-view" style="display:none;">
+                <div class="glass-panel" style="padding: 2rem;">
+                    <h2 style="margin-bottom: 1rem; color: var(--accent-cyan);"><i class="fa-solid fa-gear"></i> System Settings</h2>
+                    <br>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 0.5rem;">AI Models</h3>
+                    <div style="padding: 1rem 0; color: var(--text-muted);">
+                        <p style="margin-bottom: 0.5rem;"><input type="checkbox" checked disabled> <strong>Hybrid Ensemble (Active)</strong> - Automatically selects best model</p>
+                        <p style="margin-bottom: 0.5rem;"><input type="checkbox" checked disabled> Random Forest Classification (Backup)</p>
+                        <p><input type="checkbox" checked disabled> Decision Tree Inference (Backup)</p>
+                    </div>
+                    
+                    <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 0.5rem;">Clinical Preferences</h3>
+                    <div style="padding: 1rem 0; color: var(--text-muted);">
+                        <p style="margin-bottom: 0.5rem;">Severity Threshold highlighting mode: <span style="color:var(--accent-cyan);">Strict</span></p>
+                        <p>Theme: <span style="color:var(--accent-cyan);">Medical Dark Mode</span></p>
+                    </div>
+                    
+                    <button class="glow-btn" style="margin-top: 1rem;" id="simulate-update-btn"><i class="fa-solid fa-cloud-arrow-down"></i> Force Model Weights Update</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
