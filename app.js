@@ -373,7 +373,7 @@ function renderHistory() {
     historyDB.forEach(record => {
         let statusBadge = '';
         if (record.status === 'Review Pending') {
-            statusBadge = `<span class="status-badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">${record.status}</span>`;
+            statusBadge = `<button class="status-badge" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.4)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.2)'" onclick="approveSingleRecord('${record.id}')">Approve</button>`;
         } else if (record.status === 'Approved') {
             statusBadge = `<span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">${record.status}</span>`;
         } else {
@@ -446,6 +446,24 @@ window.deleteHistoryRecord = function (recordId) {
 };
 
 // --- Record Approval Logic ---
+window.approveSingleRecord = function (recordId) {
+    let hasUpdates = false;
+    historyDB.forEach(record => {
+        if (record.id === recordId && record.status === 'Review Pending') {
+            record.status = 'Approved';
+            hasUpdates = true;
+        }
+    });
+
+    if (hasUpdates) {
+        localStorage.setItem('medpredict_history', JSON.stringify(historyDB));
+        renderHistory();
+        
+        // Let's also sync the patient's last diagnosis/severity if they match conceptually, 
+        // but since approveRecord didn't do it, we'll keep parity.
+    }
+};
+
 window.approveRecord = function (patientName) {
     let hasUpdates = false;
 
