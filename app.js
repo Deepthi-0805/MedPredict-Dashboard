@@ -372,12 +372,10 @@ function renderHistory() {
     }
     historyDB.forEach(record => {
         let statusBadge = '';
-        if (record.status === 'Review Pending') {
+        if (record.status !== 'Approved') {
             statusBadge = `<button class="status-badge" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.4)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.2)'" onclick="approveSingleRecord('${record.id}')">Approve</button>`;
-        } else if (record.status === 'Approved') {
-            statusBadge = `<span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">${record.status}</span>`;
         } else {
-            statusBadge = `<span class="status-badge" style="background: rgba(136, 146, 176, 0.2); color: var(--text-muted);">${record.status}</span>`;
+            statusBadge = `<span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">Approved</span>`;
         }
 
         historyTbody.innerHTML += `
@@ -420,7 +418,7 @@ function renderPatients(searchQuery = '') {
                 </div>
                 <div style="font-size:0.85rem; margin-bottom: 0.5rem;"><strong style="color:var(--text-muted);">Last Diagnosis:</strong> ${patient.lastDiagnosis || 'None'}</div>
                 <div style="display:flex; gap:0.5rem; margin-top: 0.5rem;">
-                    <button class="glow-btn" style="flex:2; padding: 0.5rem; font-size: 0.8rem;" onclick="approveRecord('${patient.name.replace(/'/g, "\\'")}')">View / Approve</button>
+                    <button class="glow-btn" style="flex:2; padding: 0.5rem; font-size: 0.8rem;" onclick="viewPatientHistory('${patient.name.replace(/'/g, "\\'")}')">View History</button>
                     <button class="clear-btn" style="flex:1; padding: 0.5rem; font-size: 0.8rem; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);" onclick="deletePatient('${patient.name.replace(/'/g, "\\'")}')"><i class="fa-solid fa-trash"></i> Delete</button>
                 </div>
             </div>
@@ -449,7 +447,7 @@ window.deleteHistoryRecord = function (recordId) {
 window.approveSingleRecord = function (recordId) {
     let hasUpdates = false;
     historyDB.forEach(record => {
-        if (record.id === recordId && record.status === 'Review Pending') {
+        if (record.id === recordId && record.status !== 'Approved') {
             record.status = 'Approved';
             hasUpdates = true;
         }
@@ -464,23 +462,8 @@ window.approveSingleRecord = function (recordId) {
     }
 };
 
-window.approveRecord = function (patientName) {
-    let hasUpdates = false;
-
-    // Find all pending history records for this patient and approve them
-    historyDB.forEach(record => {
-        if (record.name.toLowerCase() === patientName.toLowerCase() && record.status === 'Review Pending') {
-            record.status = 'Approved';
-            hasUpdates = true;
-        }
-    });
-
-    if (hasUpdates) {
-        localStorage.setItem('medpredict_history', JSON.stringify(historyDB));
-        renderHistory();
-    }
-
-    // Auto-navigate to history tab to show the approved records
+window.viewPatientHistory = function (patientName) {
+    // Simply navigate to the history tab 
     document.querySelector('[data-target="view-history"]').click();
 };
 
